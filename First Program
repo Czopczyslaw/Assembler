@@ -1,0 +1,113 @@
+     ORG 800H  
+     LXI H,WCIECIE  
+     RST 3  
+     CALL STARTO  
+     RST 5  
+     MOV B,D  
+     MOV C,E  
+     RST 2  
+     MVI H,'-'  
+     CMP H  
+     JZ ODEJMOWANDO  
+     MVI H,'n'  
+     CMP H  
+     JZ NEGOWANDO  
+     MVI H,'N'  
+     CMP H  
+     JZ NEGOWANDO  
+     MVI H,'+'  
+     CMP H  
+     JZ DODAWANDO  
+     RST 1  
+     JMP BLOND  
+     HLT  
+BLOND    LXI H,BLEND  
+     RST 3  
+     JMP 800H  
+BLEND    DB 'N LUB + LUB -',10,13,'@'              
+W4   DB 10,13,'Wpisz 4 cyfry',10,13,'@'          
+STARTO   LXI H,T1  
+     RST 3  
+     LXI H,T3  
+     RST 3  
+     LXI H,T4  
+     RST 3  
+     LXI H,T5  
+     RST 3  
+     LXI H,W4  
+     RST 3  
+     RET  
+T1   DB 'WYBIERZ OPCJE',13,10,'@'                          
+T3   DB 'DODAWANIE-->+',13,10,'@'               
+T4   DB 'ODEJMOWANIE-->-',13,10,'@'             
+T5   DB 'NEGACJA-->n',13,10,'@'        
+NOTC     DB 'ntcarry',13,10,'@'  
+NOTZ     DB 'ntzero',10,13,'@'  
+ZWYKLE   DB 'odjecie zwykle',10,13,'@'                            
+WCIECIE  
+     DB 13,10,'@'      
+ROWNANDO  
+     DB '=','@'  
+WPISANDO  
+     RST 5  
+     RET  
+DODAWANDO  
+     CALL WPISANDO  
+     XCHG  
+     DAD B  
+     XCHG  
+     LXI H,WCIECIE  
+     RST 3  
+     CC NADWYZKA  
+     MOV A,D  
+     RST 4  
+     MOV A,E  
+     RST 4  
+     JMP KONIEC  
+ODEJMOWANDO  
+     CALL WPISANDO  
+     LXI H,ROWNANDO  
+     RST 3  
+     MOV A,B  
+     CMP D  
+     JC ZAMIEN ; B - D < 0  
+     JNZ CDN ; B - D > 0  
+     MOV A,C ; B - D == 0  
+     CMP E  
+     JNC CDN  
+ZAMIEN  
+     LXI H,MINUS  
+     RST 3  
+     PUSH B  
+     MOV B,D  
+     MOV C,E  
+     POP D  
+CDN  
+     STC  
+     CMC  
+     MOV A,C  
+     SUB E  
+     MOV C,A  
+     MOV A,B  
+     SBB D  
+     RST 4  
+     MOV A,C  
+     RST 4  
+     JMP KONIEC  
+NEGOWANDO  
+     LXI H,ROWNANDO  
+     RST 3  
+     MVI A,255  
+     SUB D  
+     RST 4  
+     MVI A,255  
+     SUB E  
+     RST 4  
+     JMP KONIEC  
+NADWYZKA  
+     MVI A,1  
+     RST 4  
+     RET  
+MINUS    DB '-','@'   
+KONIEC  
+     HLT  
