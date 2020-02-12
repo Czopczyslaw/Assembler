@@ -1,0 +1,178 @@
+ Progr           segment
+    assume  cs:Progr, ds:dane, ss:stosiwo
+
+start:          mov     ax,dane
+                mov     ds,ax
+                mov     ax,stosiwo
+                mov     ss,ax
+                mov     sp,offset szczyt
+                
+                mov     dx,offset poczatek
+                mov     ah,09h
+                int     21h
+                
+                
+                mov     ah,0ah
+                mov     dx,offset max           
+                int     21h
+                ;mov     dx,offset znaki       
+                
+                mov     suma,0
+                mov     i,0
+                mov     znak,0 
+                mov     wart,0
+                    
+sprawdzando:    
+                mov     dh,i
+                mov     dl,len
+                cmp     dh,dl
+                jz      Konwertowando                    ;jump zero jesli odjecie len od i == 0 czyli i==len STOP ITERACJI
+                mov     ax,suma
+                mov     bx,10
+                mul     bx
+                jc      PozaZakresem
+                mov     suma,ax
+                
+                mov     dx,offset znaki      ;znak:= znak[i]
+                mov     bh,0
+                mov     bl,i
+                mov     ch,0     
+                mov     cl,[znaki][bx]
+                mov     znak,cl
+                
+                mov     cl,znak
+                sub     cl,'0'
+                mov     wart,cl
+                cmp     wart,10
+                jnc     Blednie                 
+                
+                
+                mov     ax,suma
+                mov     dl,wart
+                mov     dh,0
+                
+                add     ax,dx                   ;dodaje do sumy wartosc jesli bylo bez bledu
+                jc      PozaZakresem
+                mov     suma,ax
+                inc     i                    ;i++
+                 
+                jmp     sprawdzando
+               
+                
+koncowando:     
+                mov     ah,4ch
+                mov     al,0
+                int     21h                           
+PozaZakresem:   
+                mov     dx,offset outOfZakres
+                mov     ah,09h
+                int     21h
+                jmp     koncowando             
+Blednie:
+                mov     dx,offset blad
+                mov     ah,09h
+                int     21h
+                jmp     koncowando
+Konwertowando:  
+               
+                push    suma
+                mov     dx,offset hexadec
+                mov     ah,09h
+                int     21h
+                mov     cx,4
+PetlaHex:          mov     ax,suma
+                and     ax,0000000000001111b
+                mov     bx,ax
+                mov     dh,0
+                mov     dl,[hex][bx]
+                push    dx
+                mov     ax,suma
+                shr     ax,4
+                mov     suma,ax
+                dec     cx
+                cmp     cx,0
+                jnz     PetlaHex 
+                mov     cx,4
+WypisywandoHex:                     
+                pop     dx
+                mov     ah,02h
+                int     21h
+                dec     cx
+                cmp     cx,0
+                jnz     WypisywandoHex
+                mov     dx,'h'
+                mov     ah,02h
+                int     21h
+                
+KonwertowandoBin: 
+                mov     dx,offset binarnie
+                mov     ah,09h
+                int     21h
+                pop     suma              
+                mov     cx,16      ;
+PetlaBin:                
+                mov     ax,suma
+                and     ax,0000000000000001b
+                mov     bx,ax
+                mov     dh,0
+                mov     dl,[hex][bx]
+                push    dx 
+                mov     ax,suma
+                shr     ax,1
+                mov     suma,ax
+                dec     cx
+                cmp     cx,0
+                jnz     PetlaBin 
+                mov     ch,4 
+Spacja:         
+                mov     dx,' '
+                mov     ah,02h
+                int     21h
+                mov     cl,4
+WypisywandoBin:                
+                pop     dx
+                mov     ah,02h
+                int     21h
+                dec     cl
+                cmp     cl,0
+                jnz     WypisywandoBin 
+                dec     ch
+                cmp     ch,0
+                jnz     Spacja
+                mov     dx,'b'
+                mov     ah,02h
+                int     21h
+                
+                jmp     koncowando
+                
+Progr           ends
+
+dane            segment
+    poczatek    db 'Wpisz  liczbe 5 cyfrowa z zakresu <0-65535>: $'
+    blad        db 10,13,'Cos zle zostalo wpisane ;( $'
+    max         db 6 ; 5 miejsc plus dolar
+    len         db ?
+    znaki       db 6 dup(0)
+    hex         db '0123456789ABCDEF$'
+    binarnie    db 10,13,'Binarna reprezentacja:$'
+    hexadec     db 10,13,'Reprezentacja Szesnastkowa: $'
+    suma        dw ?
+    kopiasumy   dw ?
+    i           db ?
+    znak        db ?
+    wart        db ?
+    teksto      dw ?
+    outOfZakres db 13,10,'Blad: Za duza wartosc$'
+    linia       db 13,10,'$'
+
+    
+    
+    
+dane            ends
+
+stosiwo          segment
+                dw    100h dup(0)
+szczyt          Label word
+stosiwo          ends
+
+end start
