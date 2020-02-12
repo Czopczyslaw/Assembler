@@ -1,0 +1,849 @@
+;This program plays a simple song you composed in simple txt file. Ive attached "furelise.txt" for this program to play.
+;To play anything you have to compile this program and then using dosbox command line "program.exe furelise.txt" 
+Progr           segment
+                assume  cs:Progr, ds:dane, ss:stosik
+start:          mov     ax,dane
+                mov     ds,ax 
+                mov     es,ax
+                mov     ax,stosik
+                mov     ss,ax
+                mov     sp,offset szczyt
+;//////////////////////////////               
+    NutaC         equ 569
+    NutaD         equ 507
+    NutaE         equ 452
+    NutaF         equ 426
+    NutaG         equ 380
+    NutaA         equ 338
+    NutaH         equ 301
+    NutCP        equ 284
+    ntCis       equ 538
+    ntDis       equ 479
+    ntEis       equ 439
+    ntFis       equ 402
+    ntGis       equ 359
+    ntAis       equ 319
+    Pauza        equ 1
+    ;dlugosc nut
+    Cn          equ 16
+    Pn          equ 8
+    CWn         equ 4
+    Osn         equ 2
+    Szn         equ 1
+;/////////////////////////////////
+;ds:[81] to start wszystkiego po wprowadzeniu nazwy programu tzn program.exe >>to co wpisuje<< zakonczone znakiem nr 13
+;przy czym od ds:[82] sie zaczyna bo w 81 jest spacja 
+;ds:[80] to liczba znakow po ds:[81] 
+        ;wziecie adresu PSP 
+        mov ah,62h
+        int 21h
+        mov ax,bx
+        mov ds,ax
+        mov ax,dane
+        mov es,ax
+        mov ch,0
+        mov cl,ds:[80h]
+        cmp cl,0
+        jz NieMaPliku
+        mov bx,cx
+        mov es:[BuforDS+bx],'$'
+        sub cl,1
+        lea di,es:[BuforDS]
+        mov si,0082h
+        
+        cld
+        ;MOVSB ---->  Move byte at address DS:(E)SI to address ES:(E)DI  
+        rep movsb
+        
+        mov ax,dane
+        mov ds,ax
+        mov     ax,stosiwo
+        mov     es,ax
+        
+        ;mov dx,offset BuforDS
+         ; mov cx,9
+         ;L: 
+        ;mov ah,02h
+        ;int 21h
+        ;inc dx
+        ;loop L
+jmp Pyk        
+NieMaPliku:
+        mov ah,09h
+        mov dx,offset BrakPliku
+        int 21h 
+        jmp Koncowando
+Pyk: 
+        
+;otworzenie pliku        
+        mov ah,3dh  
+        mov al,00h
+        mov dx,offset(BuforDS)
+        int 21h             
+        jc  NieMaPliku
+        mov handlerPliku,ax        
+        
+        mov ax,sp
+        mov Wskaznik,ax
+
+        
+Czytanie:
+        ;//////////////////////////////////////////////////
+        ;czytanie z pliku  NUTA                         
+        mov al,00h
+        mov ah,3fh
+        mov bx,handlerPliku
+        mov cx,6
+        mov dx,offset(zawartosc)
+        int 21h 
+        ;czytanie z pliku  OKTAWA
+        mov al,00h
+        mov ah,3fh
+        mov bx,handlerPliku                               ;pobranie z pliku danych
+        mov cx,2
+        mov dx,offset(oktawa)
+        int 21h
+        ;czytanie z pliku  DLUGOSC
+        mov al,00h
+        mov ah,3fh
+        mov bx,handlerPliku
+        mov cx,5
+        mov dx,offset(dlugosc)
+        int 21h
+        ;//////////////////////////////////////////////////
+        ;mov dl,LicznikDebug
+        ;inc dl
+        ;mov LicznikDebug,dl
+        ;mov ah,02h
+        ;int 21h
+        ;mov dx,offset NowaLinia
+        ;mov ah,09h
+        ;int 21h
+                               
+        call wNutaC
+        push ax
+        call Oktawa1
+        call CalaNuta  
+        mov bl,PlaceHolder
+        mov bh,0      
+        push bx
+        inc countStosu
+         
+        ;Sprawdzanie czy koniec pliku
+        mov dx,CzyKoniec
+        cmp dx,1
+        jz StartoPolDrogi
+        
+        
+        jmp Czytanie
+StartoPolDrogi:
+jmp Odtwarzanie
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\   
+        ;/////////////////////////////////////////////NUTY
+wNutaC:
+mov cx,5        
+lea si,zawartosc
+lea di,nC
+LiteryC:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wNutaD
+inc si
+inc di
+dec cx
+jz C
+jmp LiteryC
+C:
+mov ax,NutaC    
+ret     
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  
+wNutaD:
+mov cx,5        
+lea si,zawartosc
+lea di,nD
+LiteryD:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wNutaE
+inc si
+inc di
+dec cx
+jz D
+jmp LiteryD
+D:
+mov ax,NutaD
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+wNutaE:
+mov cx,5        
+lea si,zawartosc
+lea di,nuE
+LiteryE:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wNutaF
+inc si
+inc di
+dec cx
+jz E
+jmp LiteryE
+E:
+mov ax,NutaE
+ret 
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\        
+wNutaF:
+mov cx,5        
+lea si,zawartosc
+lea di,nF
+LiteryF:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wNutaG
+inc si
+inc di
+dec cx
+jz F
+jmp LiteryF
+F:
+mov ax,NutaF
+ret  
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\       
+wNutaG:
+mov cx,5        
+lea si,zawartosc
+lea di,nG
+LiteryG:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wNutaA
+inc si
+inc di
+dec cx
+jz G
+jmp LiteryG
+G:
+mov ax,NutaG
+ret  
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\         
+wNutaA:
+mov cx,5        
+lea si,zawartosc
+lea di,nA
+LiteryA:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wNutaH
+inc si
+inc di
+dec cx
+jz A
+jmp LiteryA
+A:
+mov ax,NutaA
+ret  
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\      
+wNutaH:
+mov cx,5        
+lea si,zawartosc
+lea di,nH
+LiteryH:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wNutCP
+inc si
+inc di
+dec cx
+jz H
+jmp LiteryH
+H:
+mov ax,NutaH
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\       
+wNutCP:
+mov cx,5        
+lea si,zawartosc
+lea di,nCP
+LiteryCP:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wntCis
+inc si
+inc di
+dec cx
+jz CP
+jmp LiteryCP
+CP:
+mov ax,NutCP
+ret 
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\      
+wntCis:
+mov cx,5
+lea si,zawartosc
+lea di,nCis
+LiteryCis:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wntDis
+inc si
+inc di
+dec cx
+jz Cis
+jmp LiteryCis
+Cis:
+mov ax,ntCis
+ret 
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\   
+wntDis:
+mov cx,5
+lea si,zawartosc
+lea di,nDis
+LiteryDis:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wntEis
+inc si
+inc di
+dec cx
+jz Dis
+jmp LiteryDis
+Dis:
+mov ax,ntDis
+ret  
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  
+wntEis:
+mov cx,5
+lea si,zawartosc
+lea di,nEis
+LiteryEis:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wntFis
+inc si
+inc di
+dec cx
+jz Eis
+jmp LiteryEis
+Eis:
+mov ax,ntEis
+ret   
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  
+wntFis:
+mov cx,5
+lea si,zawartosc
+lea di,nFis
+LiteryFis:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wntGis
+inc si
+inc di
+dec cx
+jz Fis
+jmp LiteryFis
+Fis:
+mov ax,ntFis
+ret  
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  
+wntGis:
+mov cx,5
+lea si,zawartosc
+lea di,nGis
+LiteryGis:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wntAis
+inc si
+inc di
+dec cx
+jz Gis
+jmp LiteryGis
+Gis:
+mov ax,ntGis
+ret     
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  
+wntAis:
+mov cx,5
+lea si,zawartosc
+lea di,nAis
+LiteryAis:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wPauza
+inc si
+inc di
+dec cx
+jz Ais
+jmp LiteryAis
+Ais:
+mov ax,ntAis
+ret  
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  
+wPauza:
+mov cx,5
+lea si,zawartosc
+lea di,nPauza
+LiteryPauza:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne wKoniec
+inc si
+inc di
+dec cx
+jz PAUSE
+jmp LiteryPauza 
+PAUSE:
+mov ax,Pauza
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  
+wKoniec:
+mov cx,5
+lea si,zawartosc
+lea di,nKoniec
+LiteryKoniec:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne BladNut
+inc si
+inc di
+dec cx
+jz Tak
+jmp LiteryKoniec 
+Tak:
+mov ax,1
+mov CzyKoniec,ax
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  
+BladNut:
+    mov ah,09h
+    mov dx,offset BladwNutach
+    int 21h
+    jmp Koncowando
+
+    
+
+
+
+;///////////////////////OKTAWY
+Oktawa1:
+    mov cx,2        
+    lea si,oktawa
+    lea di,o1
+        LiteryO1:
+        mov al,[si]
+        mov ah,[di]
+        cmp al,ah
+        jne Oktawa2
+        inc si
+        inc di
+        dec cx
+        jz O1M
+        jmp LiteryO1
+O1M:
+pop si
+pop ax
+mov cl,6
+shl ax,cl
+push ax
+push si
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\
+Oktawa2:
+mov cx,2        
+lea si,oktawa
+lea di,o2
+LiteryO2:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne Oktawa3
+inc si
+inc di
+dec cx
+jz O2M
+jmp LiteryO2   
+O2M:
+pop si
+pop ax
+mov cl,5
+shl ax,cl
+push ax
+push si
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\
+Oktawa3:
+mov cx,2        
+lea si,oktawa
+lea di,o3
+LiteryO3:
+mov al,[si]
+mov ah,[di]
+cmp al,ah
+jne Oktawa4
+inc si
+inc di
+dec cx
+jz O3M
+jmp LiteryO3
+O3M:
+pop si
+pop ax
+mov cl,4
+shl ax,cl
+push ax
+push si
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\
+Oktawa4:
+    mov cx,2        
+    lea si,oktawa
+    lea di,o4
+    LiteryO4:
+    mov al,[si]
+    mov ah,[di]
+    cmp al,ah
+    jne Oktawa5
+    inc si
+    inc di
+    dec cx
+    jz O4M
+    jmp LiteryO4
+O4M:
+pop si
+pop ax
+mov cl,3
+shl ax,cl
+push ax
+push si
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\
+Oktawa5:
+    mov cx,2        
+    lea si,oktawa
+    lea di,o5
+    LiteryO5:
+    mov al,[si]
+    mov ah,[di]
+    cmp al,ah
+    jne Oktawa6
+    inc si
+    inc di
+    dec cx
+    jz O5M
+    jmp LiteryO5
+O5M:
+pop si
+pop ax
+mov cl,2
+shl ax,cl
+push ax
+push si
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\
+Oktawa6:
+    mov cx,2        
+    lea si,oktawa
+    lea di,o6
+        LiteryO6:
+        mov al,[si]
+        mov ah,[di]
+        cmp al,ah
+        jne Oktawa7
+        inc si
+        inc di
+        dec cx
+        jz O6M
+        jmp LiteryO6
+O6M:
+pop si
+pop ax
+shl ax,1
+push ax
+push si
+ret
+;\\\\\\\\\\\\\\\\\\\\\\\ 
+Oktawa7:
+    mov cx,2        
+    lea si,oktawa
+    lea di,o7
+        LiteryO7:
+        mov al,[si]
+        mov ah,[di]
+        cmp al,ah
+        jne BladOktawy
+        inc si
+        inc di
+        dec cx
+        jz O7M
+        jmp LiteryO7         
+O7M:
+pop si
+pop ax
+push ax
+push si
+ret
+BladOktawy:
+    mov ah,09h
+    mov dx,offset BladwOktawie
+    int 21h
+    jmp Koncowando
+;//////////////////////////OKTAWYKONIEC
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\DLUGOSC DZWIEKU
+CalaNuta:
+    mov cx,4       
+    lea si,dlugosc
+    lea di,Cala
+    LiteryCala:
+    mov al,[si]
+    mov ah,[di]
+    cmp al,ah
+    jne PolNuta
+    inc si
+    inc di
+    dec cx
+    jz CNuta
+    jmp LiteryCala
+Cnuta:
+mov al,Cn
+mov PlaceHolder,al
+ret
+;\\\\\\\\\\\\\\\\\\
+PolNuta:
+    mov cx,4       
+    lea si,dlugosc
+    lea di,Pol
+    LiteryPol:
+    mov al,[si]
+    mov ah,[di]
+    cmp al,ah
+    jne CwiercNuta
+    inc si
+    inc di
+    dec cx
+    jz PNuta
+    jmp LiteryPol
+    Pnuta:
+mov al,Pn
+mov PlaceHolder,al
+ret
+;\\\\\\\\\\\\\\\\\\\\\
+CwiercNuta:
+    mov cx,4       
+    lea si,dlugosc
+    lea di,Cwierc
+    LiteryCwierc:
+    mov al,[si]
+    mov ah,[di]
+    cmp al,ah
+    jne OsiemNuta
+    inc si
+    inc di
+    dec cx
+    jz CWNuta
+    jmp LiteryCwierc
+CWnuta:
+mov al,CWn
+mov PlaceHolder,al
+ret
+;\\\\\\\\\\\\\\\\\\\
+OsiemNuta:
+    mov cx,4       
+    lea si,dlugosc
+    lea di,Osem
+    LiteryOsiem:
+    mov al,[si]
+    mov ah,[di]
+    cmp al,ah
+    jne SzesnNuta
+    inc si
+    inc di
+    dec cx
+    jz ONuta
+    jmp LiteryOsiem
+Onuta:
+mov al,CWn
+mov PlaceHolder,al
+ret
+;\\\\\\\\\\\\\\\\\\\
+SzesnNuta:
+    mov cx,4       
+    lea si,dlugosc
+    lea di,Szesn
+    LiterySzesn:
+    mov al,[si]
+    mov ah,[di]
+    cmp al,ah
+    jne BladCzasu
+    inc si
+    inc di
+    dec cx
+    jz SzesNuta
+    jmp LiterySzesn
+SzesNuta:
+mov al,Szn
+mov PlaceHolder,al
+ret
+;\\\\\\\\\\\\\\\\\\\
+;\\\\\\\\\\\\\\\\\\\\\\\\\\\\\DLUGOSC DZWIEKU KONIEC
+Odtwarzanie:
+mov dx,offset Odtwarzando
+mov ah,09h
+int 21h
+mov ah,01h
+int 21h
+
+mov ch,0
+mov cl,countStosu
+;shr cl,1
+;mov ax,stosiwo
+;mov ss,ax
+mov sp,Wskaznik
+dec sp       
+dec sp  
+
+Starto:
+mov countStosu,cl
+
+pop ax
+dec sp
+dec sp 
+dec sp
+dec sp
+pop bx
+dec sp
+dec sp
+dec sp
+dec sp
+;//////////////////////////////////////////////
+        out 42h,al      
+        mov al,ah       
+        out 42h,al
+       
+        in  al,61h          ;wlaczenie glosnika
+        or  al,00000011b
+        out 61h,al
+        
+        mov si,sp
+        mov di,ss
+        mov sp,offset szczytowo
+        mov dx,es
+        mov ss,dx
+        
+        
+        xor dx,dx           ;odczekanie dlugosci nuty
+        mov cl,bl                                                                        ;odegranie dzwieku
+        mov ch,0
+        mov ah,86h
+        int 15h   
+        
+        mov sp,si
+        mov ss,di
+        
+
+        in  al,61h          ;wylaczenie glosnika
+        and al,11111100b
+        out 61h,al
+        ;//////////////////////////////////////////////       
+mov cl,countStosu
+Loop Starto
+jmp Koncowando
+Blad:
+    mov ah,09h
+    mov dx,offset BladJakis
+    int 21h
+    jmp Koncowando
+BladCzasu:
+    mov ah,09h
+    mov dx,offset BladwCzasie
+    int 21h
+    jmp Koncowando    
+Koncowando:
+        ;zamykanie pliku
+        mov ah,3eh
+        mov dx,handlerPliku
+        int 21h
+        ;koniec programu
+        mov ah,4ch
+        mov al,0h
+        int 21h
+Progr           ends
+
+dane            segment
+    ;|||||||||||||||||||||||||||||||||||||||
+    handlerPliku dw ?
+    zawartosc    db 5 dup(0),'$'
+    oktawa       db 00,'$'
+    dlugosc      db 4 dup(0),'$'
+    plik         db 'test.txt',0
+    countStosu   db 0
+    BladJakis    db 10,13,'Jakis Blad$'
+    BladwNutach  db 10,13,'Blad w ktorejs nucie w pliku$'
+    BladwOktawie db 10,13,'Blad w ktorejs oktawie w pliku$'
+    BladwCzasie  db 10,13,'Blad w ktoryms czasie w pliku$'  
+    Odtwarzando  db 10,13,'Wcisnij przycisk by uruchomic odtwarzanie$'
+    PlaceHolder  db ?
+    CzyKoniec    dw 0   
+    LicznikDebug db 0
+    NowaLinia    db 10,13,'$'
+    Wskaznik     dw ?         
+    BrakPliku    db 10,13,'Brak takiego pliku$'   
+    BuforDS      db 255 dup(?)
+    ;|||||||||||||||||||||||||||||||||||||||
+    nC db 'nutaC,$'
+    nD db 'nutaD,$'
+    nuE db 'nutaE,$' 
+    nF db 'nutaF,$'
+    nG db 'nutaG,$'   
+    nA db 'nutaA,$' 
+    nH db 'nutaH,$' 
+    nCP db 'nutCP,$' 
+    nCis db 'ntCis,$'
+    nDis db 'ntDis,$'
+    nEis db 'ntEis,$'
+    nFis db 'ntFis,$'
+    nGis db 'ntGis,$'
+    nAis db 'ntAis,$'
+    nPauza db 'Pauza,$'
+    nKoniec db 'Koniec$'
+    ;|||||||||||||||||||||||||||||||||||||||
+    o1 db '1,$'
+    o2 db '2,$'
+    o3 db '3,$'
+    o4 db '4,$'
+    o5 db '5,$'
+    o6 db '6,$'
+    o7 db '7,$'
+    ;|||||||||||||||||||||||||||||||||||||||
+    Cala    db 'Cala,$'
+    Pol     db 'Poln,$'
+    Cwierc  db 'Cwcn,$'
+    Osem    db 'Osem,$'
+    Szesn   db 'Szsn,$'
+    ;|||||||||||||||||||||||||||||||||||||||
+dane            ends
+
+
+stosik          segment
+                dw    400h dup(0)
+szczyt          Label word
+stosik          ends
+stosiwo         segment
+                dw    400h dup(0)
+szczytowo       Label word
+stosiwo         ends
+end start
