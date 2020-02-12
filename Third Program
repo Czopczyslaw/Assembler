@@ -1,0 +1,105 @@
+;Hiding one random cmd line with red bar, and then showing it back
+
+
+Progr           segment
+assume  cs:Progr, ds:dane, ss:stosiwo,  es:VGA
+
+start:          mov     ax,dane
+mov     ds,ax
+mov     ax,stosiwo
+mov     ss,ax
+mov     sp,offset szczyt
+
+mov dx,offset Tekst0
+mov ah,09h
+int 21h
+
+
+LosujLinie:   
+mov ah,0b
+int 1ah
+mov dh,0
+mov I,dx
+SpradzIndeks:
+inc I
+mov ax,I
+cmp ax,255
+jg Ustaw0
+jmp Indeks
+Ustaw0:
+mov ax,0
+mov I,ax
+
+Indeks:
+mov bx,I
+mov al,[Los][bx]
+mov ah,0
+mov bx,160
+mul bx
+mov N,ax
+Teksto:
+
+Programo:
+push ds
+push ds
+pop es
+mov si,N
+mov ax,0b800h
+mov ds,ax
+mov di,offset Bufor
+mov cx,80
+cld
+rep movsw
+pop ds
+Kolor:
+mov bx,0b800h
+mov es,bx
+mov di,N
+mov al,32
+mov ah,32
+mov cx,80
+
+rep stosw
+MIJANIESEKUNDY:
+xor dx,dx
+mov cx,16
+mov ah,86h
+int 15h
+PrzywrocLinie:
+mov di,N
+mov si,offset Bufor
+mov cx,80
+rep movsw
+KiedyKoniec:
+mov ah,01h
+int 16h
+jnz Koncowando
+jmp LosujLinie
+
+Koncowando:
+mov     ah,4ch
+mov     al,0
+int     21h
+Progr           ends
+
+dane            segment
+Bufor   db 160 dup(0)
+Los     db 13,23,3,11,16,20,15,1,23,10,7,9,22,19,16,20,11,4,11,19,8,21,7,24,6,1,9,13,7,2,12,16,10,1,17,14,16,19,12,9,14,7,13,3,8,13,6,22,21,15,16,0,1,8,20,6,2,8,11,10,4,3,21,3,11,13,3,23,12,9,23,8,4,16,6,8,3,18,15,19,9,1,18,2,8,21,11,10,23,11,16,18,2,9,10,20,6,2,23,1,12,1,4,12,14,10,16,19,7,4,20,7,21,21,24,1,14,4,24,0,0,6,22,16,20,10,9,13,0,11,12,14,22,11,4,22,11,14,21,2,10,9,14,3,6,23,13,0,15,21,19,19,17,9,12,5,5,21,0,11,1,16,24,21,23,15,18,23,15,2,0,3,0,8,12,5,12,22,13,24,24,20,8,10,16,4,17,6,17,19,4,11,9,14,23,17,3,0,22,4,21,2,24,0,18,7,8,8,7,18,19,15,2,12,19,22,10,24,24,5,11,23,21,20,19,17,18,11,22,13,15,0,2,23,17,0,22,24,23,22,4,23,7,14,3,17,10,20,20,13,1,14,10,21,24,0
+N       dw ?
+I       dw ?
+Tekst0   db 'Czlowiek ma niewatpliwie sily pozwalajace mu panowac',13,10,'nad czasem i przestrzenia lub tez moze z takich sil korzystac',13,10,'co na jedno wychodzi. Nauka usiluje zglebic istote tych sil.',13,10,'a wojskowi marza o ich strategicznym zastosowaniu. Jest tak',10,13,'Zarowno na Wschodzie, jak i na Zachodzie (na Wschodzie',13,10,'nadaje sie tym sprawom mniejszy rozglos, ale za to pracuje sie',13,10,'nad nimi intensywniej.',13,10,'Czy mowienie w tym kontekscie o sile nie jest czasem',13,10,'Poboznym zyczeniem? Na pewno nie byloby zle, gdyby moc',13,10,'na przyklad sila woli zatrzymac kulke ruletki tam, gdzie',13,10,'chcemy, a i telepatyczna ,,lacznosc radiowa" miedzy okretami',13,10,'podwodnymi bylaby nie do pogardzenia. Jednak czy w takich',13,10,'i podobnych zjawiskach istotnie przejawia sie sila?',13,10,'W pierwszej chwili nasuwa sie odpowiedz przeczaca.',13,10,'Z pewnoscia jeden wybuch bomby wodorowej powoduje',13,10
+Teskt1   db 'potezniejsze skutki niz nawet tysiac Uri Gellerow razem',13,10,'wzietych. Technologia jest w ogole czyms bardziej uchwytnym',13,10,'niz parapsychologia, jej zdobycze mozna stosowac w sposob',13,10,'celowy i pewny, a od czasu wynalezienia kola to ona wlasnie',13,10,'kierowala biegiem historii.',13,10,'Wszystko to prawda. Silami paranormalnymi nielatwo',13,10,'jest kierowac, a rezultaty ich dzialania mozna uzyskac takze',13,10,'innymi metodami (np. latwiej zginac lyzki po prostu sila',13,10,'fizyczna). Sily paranormalne niewiele daja praktycznych',13,10,'korzysci mimo calego wysilku wkladanego w ich zbadanie$'
+
+dane            ends
+stosiwo          segment
+dw    100h dup(0)
+
+szczyt          Label word
+stosiwo          ends
+
+VGA     segment
+
+VGA     ends
+
+end start
+
